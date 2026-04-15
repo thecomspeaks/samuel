@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Samuel Philip — POS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --font-body: 'Inter', sans-serif;
+    --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+    --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+    --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+    --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+    --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+    --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem;
+    --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem;
+    --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem;
+    --radius-sm: 0.375rem; --radius-md: 0.5rem;
+    --radius-lg: 0.75rem; --radius-xl: 1rem; --radius-full: 9999px;
+    --transition: 160ms cubic-bezier(0.16, 1, 0.3, 1);
+    --bg: #ffffff; --surface: #f8f9fa; --surface-2: #f1f3f5;
+    --border: rgba(0,0,0,0.09); --text: #1a1a1a;
+    --text-muted: #6b7280; --text-faint: #9ca3af;
+    --primary: #0f6cbf; --primary-hover: #0a5499;
+    --debit: #dc2626; --debit-bg: #fef2f2; --debit-border: #fecaca;
+    --credit: #16a34a; --credit-bg: #f0fdf4; --credit-border: #bbf7d0;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body { font-family: var(--font-body); background: var(--bg); color: var(--text); min-height: 100dvh; font-size: var(--text-sm); }
+
+  .header { position: sticky; top: 0; z-index: 10; background: var(--bg); border-bottom: 1px solid var(--border); padding: var(--space-3) var(--space-6); display: flex; align-items: center; justify-content: space-between; }
+  .header-left { display: flex; align-items: center; gap: var(--space-3); }
+  .logo { width: 36px; height: 36px; background: var(--text); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; font-size: var(--text-xs); font-weight: 700; letter-spacing: -0.5px; }
+  .header-name { font-size: var(--text-base); font-weight: 600; }
+  .header-sub { font-size: var(--text-xs); color: var(--text-muted); }
+  .header-right { display: flex; align-items: center; gap: var(--space-3); }
+  .date-badge { font-size: var(--text-xs); color: var(--text-muted); background: var(--surface); border: 1px solid var(--border); padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); font-weight: 500; }
+  .fo-link { font-size: var(--text-xs); font-weight: 600; color: var(--primary); text-decoration: none; background: #eff6ff; border: 1px solid #bfdbfe; padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); transition: background var(--transition); }
+  .fo-link:hover { background: #dbeafe; }
+
+  .main { max-width: 520px; margin: 0 auto; padding: var(--space-6) var(--space-4) var(--space-12); }
+  .section-label { font-size: var(--text-xs); font-weight: 600; color: var(--text-muted); letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: var(--space-3); }
+  .section { margin-bottom: var(--space-6); }
+
+  .dr-cr-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+  .dr-btn, .cr-btn { padding: var(--space-4); border-radius: var(--radius-lg); border: 2px solid var(--border); background: var(--surface); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.04em; cursor: pointer; transition: all var(--transition); display: flex; align-items: center; justify-content: center; gap: var(--space-2); }
+  .dr-btn:hover { border-color: var(--debit-border); background: var(--debit-bg); color: var(--debit); }
+  .cr-btn:hover { border-color: var(--credit-border); background: var(--credit-bg); color: var(--credit); }
+  .dr-btn.active { border-color: var(--debit); background: var(--debit-bg); color: var(--debit); }
+  .cr-btn.active { border-color: var(--credit); background: var(--credit-bg); color: var(--credit); }
+
+  .head-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr)); gap: var(--space-2); }
+  .head-btn { padding: var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); font-size: var(--text-xs); font-weight: 500; cursor: pointer; text-align: left; transition: all var(--transition); line-height: 1.3; min-height: 44px; color: var(--text); }
+  .head-btn:hover { background: #eff6ff; border-color: #93c5fd; color: var(--primary); }
+  .head-btn.active { background: var(--primary); border-color: var(--primary); color: white; font-weight: 600; box-shadow: var(--shadow-sm); }
+
+  .input-field { width: 100%; padding: var(--space-3) var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); color: var(--text); font-family: var(--font-body); font-size: var(--text-sm); transition: border-color var(--transition), box-shadow var(--transition); outline: none; }
+  .input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15,108,191,0.1); }
+  .input-field::placeholder { color: var(--text-faint); }
+
+  .amount-wrapper { position: relative; }
+  .amount-prefix { position: absolute; left: var(--space-4); top: 50%; transform: translateY(-50%); font-size: var(--text-lg); font-weight: 700; color: var(--text-muted); pointer-events: none; }
+  .amount-input { width: 100%; padding: var(--space-4) var(--space-4) var(--space-4) 2.5rem; border: 2px solid var(--border); border-radius: var(--radius-lg); background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: var(--text-xl); font-weight: 700; outline: none; transition: border-color var(--transition), box-shadow var(--transition); }
+  .amount-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15,108,191,0.1); }
+  .amount-input::placeholder { color: var(--text-faint); }
+
+  .payment-toggle { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-full); padding: var(--space-1); gap: var(--space-1); width: fit-content; }
+  .pay-opt { padding: var(--space-2) var(--space-5); border-radius: var(--radius-full); border: none; font-size: var(--text-sm); font-weight: 600; cursor: pointer; background: transparent; color: var(--text-muted); transition: all var(--transition); }
+  .pay-opt.active { background: var(--bg); color: var(--text); box-shadow: var(--shadow-sm); }
+
+  .save-btn { width: 100%; padding: var(--space-4); background: var(--text); color: white; border: none; border-radius: var(--radius-lg); font-size: var(--text-base); font-weight: 700; cursor: pointer; letter-spacing: 0.02em; transition: all var(--transition); box-shadow: var(--shadow-md); }
+  .save-btn:hover { background: #2d2d2d; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+  .save-btn:active { transform: translateY(0); }
+  .save-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+  .toast { position: fixed; bottom: var(--space-6); left: 50%; transform: translateX(-50%) translateY(80px); background: #1a1a1a; color: white; padding: var(--space-3) var(--space-6); border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: 500; box-shadow: var(--shadow-md); z-index: 100; transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), opacity 0.3s; opacity: 0; white-space: nowrap; }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.success { background: #16a34a; }
+  .toast.error { background: #dc2626; }
+
+  .sync-row { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-2); }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-faint); }
+  .sync-dot.connected { background: var(--credit); }
+  .sync-text { font-size: var(--text-xs); color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <div class="logo">SP</div>
+    <div>
+      <div class="header-name">Samuel Philip</div>
+      <div class="header-sub">Personal Finance</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="date-badge" id="dateBadge"></div>
+    <a href="samuel-fo.html" class="fo-link">F&amp;O →</a>
+  </div>
+</header>
+
+<main class="main">
+  <div class="section">
+    <div class="section-label">Transaction Type</div>
+    <div class="dr-cr-row">
+      <button class="dr-btn active" id="drBtn" onclick="setType('DR')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        DEBIT
+      </button>
+      <button class="cr-btn" id="crBtn" onclick="setType('CR')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        CREDIT
+      </button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Select Head</div>
+    <div class="head-grid" id="headGrid"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Narration</div>
+    <input type="text" class="input-field" id="narration" placeholder="Brief description (optional)">
+  </div>
+
+  <div class="section">
+    <div class="section-label">Amount</div>
+    <div class="amount-wrapper">
+      <span class="amount-prefix">₹</span>
+      <input type="number" class="amount-input" id="amount" placeholder="0.00" min="0" step="0.01">
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Payment Mode</div>
+    <div class="payment-toggle">
+      <button class="pay-opt active" id="upiBtn" onclick="setPayment('UPI')">📱 UPI</button>
+      <button class="pay-opt" id="cashBtn" onclick="setPayment('Cash')">💵 Cash</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <button class="save-btn" id="saveBtn" onclick="saveEntry()">SAVE ENTRY</button>
+    <div class="sync-row">
+      <div class="sync-dot connected" id="syncDot"></div>
+      <span class="sync-text" id="syncText">Connected to Google Sheet ✓</span>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzRw-wh2qM3LQDN2yn27aaYLOS4rsRvTAPNw-2nDvjZ9EDDvG5Qrkkpcg6erqJhjTdaLQ/exec';
+
+const DEFAULT_HEADS = [
+  "Opening Balance","Salary Received","Personal Withdrawals / Drawings",
+  "Food & Dining Expenses","Medical Expenses","Toiletries & Cosmetics",
+  "Grocery & Snacks","Travel & Conveyance","Mobile Recharge & Communication",
+  "Household / Family Support","Friends & Personal Transfers",
+  "Returns & Refunds","Bank Transactions","Miscellaneous Expenses",
+  "Office / Shop Purchases","Entertainment / Outing","Medical BLGM",
+  "Stationery / Office Supplies","Gifts & Donations"
+];
+
+let state = { type: 'DR', head: null, payment: 'UPI' };
+let HEADS = [];
+
+(function init() {
+  localStorage.setItem('sp_sheet_url', SHEET_URL);
+  HEADS = JSON.parse(localStorage.getItem('sp_heads') || 'null') || [...DEFAULT_HEADS];
+  renderHeads();
+  updateDate();
+})();
+
+function updateDate() {
+  const d = new Date();
+  document.getElementById('dateBadge').textContent =
+    d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function renderHeads() {
+  document.getElementById('headGrid').innerHTML = HEADS.map((h, i) =>
+    `<button class="head-btn" onclick="setHead(${i})" id="head-${i}">${h}</button>`
+  ).join('');
+}
+
+function setType(t) {
+  state.type = t;
+  document.getElementById('drBtn').classList.toggle('active', t === 'DR');
+  document.getElementById('crBtn').classList.toggle('active', t === 'CR');
+}
+
+function setHead(i) {
+  state.head = i;
+  document.querySelectorAll('.head-btn').forEach((b, idx) =>
+    b.classList.toggle('active', idx === i));
+}
+
+function setPayment(p) {
+  state.payment = p;
+  document.getElementById('upiBtn').classList.toggle('active', p === 'UPI');
+  document.getElementById('cashBtn').classList.toggle('active', p === 'Cash');
+}
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+async function saveEntry() {
+  const amount = parseFloat(document.getElementById('amount').value);
+  const narration = document.getElementById('narration').value.trim();
+
+  if (!amount || amount <= 0) { showToast('Enter a valid amount', 'error'); return; }
+  if (state.head === null) { showToast('Select a head', 'error'); return; }
+
+  const entry = {
+    id: 'TXN' + Date.now(),
+    date: new Date().toLocaleString('en-IN'),
+    head: HEADS[state.head],
+    type: state.type,
+    payment: state.payment,
+    amount: amount,
+    narration: narration || '—'
+  };
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  // Save to localStorage
+  const existing = JSON.parse(localStorage.getItem('sp_transactions') || '[]');
+  existing.push(entry);
+  localStorage.setItem('sp_transactions', JSON.stringify(existing));
+
+  // Send to Google Sheet
+  try {
+    await fetch(SHEET_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry)
+    });
+  } catch(e) { /* silent fail — saved locally */ }
+
+  showToast(`✓ Saved — ₹${amount.toLocaleString('en-IN')} ${state.type} | ${HEADS[state.head]}`, 'success');
+
+  document.getElementById('amount').value = '';
+  document.getElementById('narration').value = '';
+  state.head = null;
+  document.querySelectorAll('.head-btn').forEach(b => b.classList.remove('active'));
+  btn.disabled = false;
+  btn.textContent = 'SAVE ENTRY';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.ctrlKey) saveEntry();
+});
+</script>
+</body>
+</html>
