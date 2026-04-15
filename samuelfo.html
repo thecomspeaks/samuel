@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Samuel Philip — F&O</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --font-body:'Inter',sans-serif;
+    --text-xs:clamp(0.75rem,.7rem + .25vw,.875rem);
+    --text-sm:clamp(.875rem,.8rem + .35vw,1rem);
+    --text-base:clamp(1rem,.95rem + .25vw,1.125rem);
+    --text-lg:clamp(1.125rem,1rem + .75vw,1.5rem);
+    --text-xl:clamp(1.5rem,1.2rem + 1.25vw,2.25rem);
+    --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;
+    --space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;
+    --radius-sm:.375rem;--radius-md:.5rem;--radius-lg:.75rem;
+    --radius-xl:1rem;--radius-full:9999px;
+    --transition:160ms cubic-bezier(.16,1,.3,1);
+    --bg:#ffffff;--surface:#f8f9fa;--surface-2:#f1f3f5;
+    --border:rgba(0,0,0,.08);--text:#1a1a1a;
+    --text-muted:#6b7280;--text-faint:#9ca3af;
+    --primary:#0f6cbf;--primary-bg:#eff6ff;
+    --debit:#dc2626;--debit-bg:#fef2f2;
+    --credit:#16a34a;--credit-bg:#f0fdf4;
+    --shadow-sm:0 1px 3px rgba(0,0,0,.06);
+    --shadow-md:0 4px 12px rgba(0,0,0,.08);
+    --sidebar-w:220px;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100dvh;font-size:var(--text-sm);display:flex;flex-direction:column}
+
+  .header{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--border);padding:var(--space-3) var(--space-6);display:flex;align-items:center;justify-content:space-between;}
+  .header-left{display:flex;align-items:center;gap:var(--space-3)}
+  .logo{width:36px;height:36px;background:var(--text);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:white;font-size:var(--text-xs);font-weight:700;letter-spacing:-.5px;flex-shrink:0}
+  .header-name{font-size:var(--text-base);font-weight:600}
+  .header-sub{font-size:var(--text-xs);color:var(--text-muted)}
+  .pos-link{font-size:var(--text-xs);font-weight:600;color:#16a34a;text-decoration:none;background:#f0fdf4;border:1px solid #bbf7d0;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);transition:background var(--transition)}
+  .pos-link:hover{background:#dcfce7}
+
+  .app-body{display:flex;flex:1;min-height:0}
+
+  .sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:var(--space-6) var(--space-3);display:flex;flex-direction:column;gap:var(--space-1);position:sticky;top:61px;height:calc(100dvh - 61px);overflow-y:auto;}
+  .nav-item{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);border-radius:var(--radius-md);border:none;background:transparent;color:var(--text-muted);font-size:var(--text-sm);font-weight:500;cursor:pointer;text-align:left;width:100%;transition:all var(--transition);}
+  .nav-item:hover{background:var(--surface-2);color:var(--text)}
+  .nav-item.active{background:white;color:var(--primary);font-weight:600;box-shadow:var(--shadow-sm);border:1px solid var(--border)}
+  .nav-icon{width:18px;height:18px;flex-shrink:0}
+
+  .content{flex:1;padding:var(--space-8);overflow-y:auto;max-width:100%}
+  .page{display:none}.page.active{display:block}
+  .page-title{font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-6);color:var(--text)}
+
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(180px,100%),1fr));gap:var(--space-4);margin-bottom:var(--space-8)}
+  .kpi-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-5);box-shadow:var(--shadow-sm)}
+  .kpi-label{font-size:var(--text-xs);color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:var(--space-2)}
+  .kpi-val{font-size:var(--text-xl);font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+  .kpi-val.debit{color:var(--debit)}.kpi-val.credit{color:var(--credit)}.kpi-val.neutral{color:var(--text)}
+
+  .table-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm)}
+  .table-header{padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap}
+  .table-title{font-size:var(--text-base);font-weight:600}
+  .search-input{padding:var(--space-2) var(--space-4);border:1px solid var(--border);border-radius:var(--radius-full);background:var(--surface);font-family:var(--font-body);font-size:var(--text-xs);outline:none;width:220px;transition:border-color var(--transition)}
+  .search-input:focus{border-color:var(--primary)}
+  .filter-row{display:flex;gap:var(--space-2);flex-wrap:wrap;padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--border);background:var(--surface)}
+  .filter-chip{padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);border:1px solid var(--border);background:var(--bg);font-size:var(--text-xs);font-weight:500;cursor:pointer;transition:all var(--transition);color:var(--text-muted)}
+  .filter-chip.active{background:var(--primary);color:white;border-color:var(--primary)}
+  table{width:100%;border-collapse:collapse}
+  th{background:var(--surface);padding:var(--space-3) var(--space-4);font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-align:left;letter-spacing:.04em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+  td{padding:var(--space-3) var(--space-4);font-size:var(--text-xs);border-bottom:1px solid var(--border);color:var(--text);font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:var(--surface)}
+  .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:var(--radius-full);font-size:11px;font-weight:600}
+  .badge-dr{background:var(--debit-bg);color:var(--debit)}
+  .badge-cr{background:var(--credit-bg);color:var(--credit)}
+  .badge-upi{background:#eff6ff;color:var(--primary)}
+  .badge-cash{background:#fefce8;color:#a16207}
+  .empty-state{padding:var(--space-10);text-align:center;color:var(--text-muted);font-size:var(--text-sm)}
+
+  .heads-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(220px,100%),1fr));gap:var(--space-3);margin-bottom:var(--space-6)}
+  .head-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4);display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);box-shadow:var(--shadow-sm)}
+  .head-num{font-size:var(--text-xs);color:var(--text-faint);font-weight:700;min-width:20px}
+  .head-name{font-size:var(--text-sm);font-weight:500;flex:1}
+  .head-del{width:28px;height:28px;border-radius:var(--radius-full);border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--text-faint);display:flex;align-items:center;justify-content:center;font-size:14px;transition:all var(--transition);flex-shrink:0}
+  .head-del:hover{background:var(--debit-bg);color:var(--debit);border-color:var(--debit)}
+  .add-head-row{display:flex;gap:var(--space-3);align-items:center}
+  .add-head-input{flex:1;padding:var(--space-3) var(--space-4);border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface);font-family:var(--font-body);font-size:var(--text-sm);outline:none;transition:border-color var(--transition)}
+  .add-head-input:focus{border-color:var(--primary)}
+
+  .btn{padding:var(--space-2) var(--space-5);border-radius:var(--radius-md);border:none;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;cursor:pointer;transition:all var(--transition)}
+  .btn-primary{background:var(--text);color:white}.btn-primary:hover{background:#2d2d2d}
+  .btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}.btn-secondary:hover{background:var(--surface-2)}
+  .btn-danger{background:var(--debit-bg);color:var(--debit);border:1px solid var(--debit)}.btn-danger:hover{background:#fee2e2}
+
+  .settings-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-xl);padding:var(--space-8);box-shadow:var(--shadow-sm);max-width:560px;margin-bottom:var(--space-6)}
+  .settings-title{font-size:var(--text-base);font-weight:700;margin-bottom:var(--space-2)}
+  .settings-desc{font-size:var(--text-xs);color:var(--text-muted);margin-bottom:var(--space-5);line-height:1.6}
+  .settings-label{font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:var(--space-2)}
+  .settings-input{width:100%;padding:var(--space-3) var(--space-4);border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface);font-family:var(--font-body);font-size:var(--text-sm);outline:none;margin-bottom:var(--space-4);transition:border-color var(--transition)}
+  .settings-input:focus{border-color:var(--primary)}
+  .code-block{background:#1a1a1a;color:#e5e7eb;border-radius:var(--radius-lg);padding:var(--space-5);font-family:'Courier New',monospace;font-size:12px;line-height:1.6;overflow-x:auto;margin-bottom:var(--space-4);position:relative}
+  .copy-btn{position:absolute;top:var(--space-3);right:var(--space-3);background:#374151;color:#d1d5db;border:none;border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);font-size:11px;cursor:pointer;font-family:var(--font-body);transition:background var(--transition)}
+  .copy-btn:hover{background:#4b5563}
+  .step{display:flex;gap:var(--space-4);margin-bottom:var(--space-4);align-items:flex-start}
+  .step-num{width:24px;height:24px;background:var(--text);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px}
+  .step-text{font-size:var(--text-xs);color:var(--text-muted);line-height:1.6}
+  .step-text strong{color:var(--text)}
+
+  .export-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-xl);padding:var(--space-8);box-shadow:var(--shadow-sm);max-width:480px;margin-bottom:var(--space-6)}
+  .export-title{font-size:var(--text-base);font-weight:700;margin-bottom:var(--space-2)}
+  .export-desc{font-size:var(--text-xs);color:var(--text-muted);margin-bottom:var(--space-6);line-height:1.6}
+
+  .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--credit);margin-right:var(--space-2)}
+
+  .toast{position:fixed;bottom:var(--space-6);left:50%;transform:translateX(-50%) translateY(80px);background:#1a1a1a;color:white;padding:var(--space-3) var(--space-6);border-radius:var(--radius-full);font-size:var(--text-sm);font-weight:500;box-shadow:var(--shadow-md);z-index:100;transition:transform .3s cubic-bezier(.16,1,.3,1),opacity .3s;opacity:0;white-space:nowrap}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  .toast.success{background:#16a34a}
+  .toast.error{background:#dc2626}
+
+  @media(max-width:768px){
+    .sidebar{display:none}
+    .content{padding:var(--space-4)}
+    .mobile-nav{display:flex}
+  }
+  .mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);z-index:30;padding:var(--space-2)}
+  .mob-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:var(--space-2);border-radius:var(--radius-md);border:none;background:transparent;cursor:pointer;font-size:10px;color:var(--text-muted);font-family:var(--font-body);transition:all var(--transition)}
+  .mob-btn.active{color:var(--primary)}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <div class="logo">SP</div>
+    <div>
+      <div class="header-name">Samuel Philip</div>
+      <div class="header-sub">Finance &amp; Operations</div>
+    </div>
+  </div>
+  <a href="samuel-pos.html" class="pos-link">← POS</a>
+</header>
+
+<div class="app-body">
+  <nav class="sidebar">
+    <button class="nav-item active" onclick="showPage('dashboard',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-item" onclick="showPage('ledger',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      All Ledger
+    </button>
+    <button class="nav-item" onclick="showPage('heads',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+      Manage Heads
+    </button>
+    <button class="nav-item" onclick="showPage('export',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      Export
+    </button>
+    <button class="nav-item" onclick="showPage('settings',this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Settings
+    </button>
+  </nav>
+
+  <main class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-title">Dashboard</div>
+      <div class="kpi-grid" id="kpiGrid"></div>
+      <div class="table-wrap">
+        <div class="table-header"><span class="table-title">Recent Transactions</span></div>
+        <table>
+          <thead><tr><th>Date</th><th>Head</th><th>Narration</th><th>Type</th><th>Mode</th><th>Amount (₹)</th></tr></thead>
+          <tbody id="recentTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ALL LEDGER -->
+    <div class="page" id="page-ledger">
+      <div class="page-title">All Ledger</div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-title">Transactions</span>
+          <input type="search" class="search-input" placeholder="Search head, narration..." oninput="filterLedger(this.value)" id="ledgerSearch">
+        </div>
+        <div class="filter-row">
+          <button class="filter-chip active" onclick="setLedgerFilter('all',this)">All</button>
+          <button class="filter-chip" onclick="setLedgerFilter('DR',this)">Debit only</button>
+          <button class="filter-chip" onclick="setLedgerFilter('CR',this)">Credit only</button>
+          <button class="filter-chip" onclick="setLedgerFilter('UPI',this)">UPI only</button>
+          <button class="filter-chip" onclick="setLedgerFilter('Cash',this)">Cash only</button>
+        </div>
+        <table>
+          <thead><tr><th>Date</th><th>Head</th><th>Narration</th><th>Type</th><th>Mode</th><th>Amount (₹)</th></tr></thead>
+          <tbody id="ledgerTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MANAGE HEADS -->
+    <div class="page" id="page-heads">
+      <div class="page-title">Manage Heads</div>
+      <div class="heads-grid" id="headsGrid"></div>
+      <div class="add-head-row">
+        <input type="text" class="add-head-input" id="newHeadInput" placeholder="New head name..." onkeydown="if(event.key==='Enter')addHead()">
+        <button class="btn btn-primary" onclick="addHead()">+ Add Head</button>
+      </div>
+    </div>
+
+    <!-- EXPORT -->
+    <div class="page" id="page-export">
+      <div class="page-title">Export</div>
+      <div class="export-card">
+        <div class="export-title">Download CSV</div>
+        <div class="export-desc">Export all transactions as a CSV file. Open in Excel or Google Sheets.</div>
+        <button class="btn btn-primary" onclick="exportCSV()" style="width:100%;padding:var(--space-4);font-size:var(--text-base)">↓ Download CSV</button>
+      </div>
+      <div class="export-card">
+        <div class="export-title">↓ Load from Google Sheet</div>
+        <div class="export-desc">Pull all transactions from your Google Sheet into this device. Use this whenever you open the app on a new system.</div>
+        <button class="btn btn-secondary" onclick="loadFromSheet()" style="width:100%;padding:var(--space-4);font-size:var(--text-base)">Load from Sheet</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="page-title">Settings</div>
+
+      <div class="settings-card">
+        <div class="settings-title">
+          <span class="status-dot"></span>
+          Google Sheet — Connected ✓
+        </div>
+        <div class="settings-desc">Your Apps Script URL is hardcoded. Every transaction saves automatically to your Google Sheet from any device.</div>
+        <div class="settings-label">Web App URL</div>
+        <input type="url" class="settings-input" value="https://script.google.com/macros/s/AKfycbzRw-wh2qM3LQDN2yn27aaYLOS4rsRvTAPNw-2nDvjZ9EDDvG5Qrkkpcg6erqJhjTdaLQ/exec" readonly style="opacity:0.6;cursor:default">
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-title">Apps Script Code</div>
+        <div class="settings-desc">For reference — this is the code already deployed in your Google Sheet.</div>
+        <div class="step"><div class="step-num">1</div><div class="step-text">Open your Google Sheet → <strong>Extensions</strong> → <strong>Apps Script</strong></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-text">Delete everything and paste the code below</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Deploy</strong> → <strong>New Deployment</strong> → Web App → Who has access: <strong>Anyone</strong></div></div>
+        <div class="code-block" id="scriptCode"><button class="copy-btn" onclick="copyScript()">Copy</button>function doPost(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName('Transactions') ||
+           ss.insertSheet('Transactions');
+  if (sh.getLastRow() === 0) {
+    sh.appendRow(['ID','Date','Head','Type',
+                  'Payment','Amount','Narration']);
+    sh.getRange(1,1,1,7).setFontWeight('bold')
+      .setBackground('#1a1a1a').setFontColor('#ffffff');
+  }
+  var d = JSON.parse(e.postData.contents);
+  sh.appendRow([d.id,d.date,d.head,d.type,
+                d.payment,d.amount,d.narration]);
+  return ContentService
+    .createTextOutput(JSON.stringify({status:'ok'}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doGet(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName('Transactions');
+  if (!sh || sh.getLastRow() <= 1)
+    return ContentService.createTextOutput('[]');
+  var rows = sh.getDataRange().getValues();
+  var headers = rows[0];
+  var data = rows.slice(1).map(function(r) {
+    var obj = {};
+    headers.forEach(function(h,i){ obj[h]=r[i]; });
+    return obj;
+  });
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}</div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-title" style="color:var(--debit)">⚠ Danger Zone</div>
+        <div class="settings-desc">Permanently delete all transactions from this device's local storage. Your Google Sheet data is NOT affected.</div>
+        <button class="btn btn-danger" onclick="clearAllData()" style="width:100%;padding:var(--space-3)">Clear Local Data</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<nav class="mobile-nav">
+  <button class="mob-btn active" onclick="showPage('dashboard',this);setMobActive(this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    Dash
+  </button>
+  <button class="mob-btn" onclick="showPage('ledger',this);setMobActive(this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+    Ledger
+  </button>
+  <button class="mob-btn" onclick="showPage('heads',this);setMobActive(this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+    Heads
+  </button>
+  <button class="mob-btn" onclick="showPage('settings',this);setMobActive(this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    Settings
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzRw-wh2qM3LQDN2yn27aaYLOS4rsRvTAPNw-2nDvjZ9EDDvG5Qrkkpcg6erqJhjTdaLQ/exec';
+
+const DEFAULT_HEADS = [
+  "Opening Balance","Salary Received","Personal Withdrawals / Drawings",
+  "Food & Dining Expenses","Medical Expenses","Toiletries & Cosmetics",
+  "Grocery & Snacks","Travel & Conveyance","Mobile Recharge & Communication",
+  "Household / Family Support","Friends & Personal Transfers",
+  "Returns & Refunds","Bank Transactions","Miscellaneous Expenses",
+  "Office / Shop Purchases","Entertainment / Outing","Medical BLGM",
+  "Stationery / Office Supplies","Gifts & Donations"
+];
+
+let heads = JSON.parse(localStorage.getItem('sp_heads') || 'null') || [...DEFAULT_HEADS];
+let transactions = JSON.parse(localStorage.getItem('sp_transactions') || '[]');
+let ledgerFilter = 'all';
+
+(function init(){
+  localStorage.setItem('sp_sheet_url', SHEET_URL);
+  renderAll();
+})();
+
+function saveHeads(){ localStorage.setItem('sp_heads', JSON.stringify(heads)); }
+
+function renderAll(){
+  transactions = JSON.parse(localStorage.getItem('sp_transactions') || '[]');
+  renderKPIs();
+  renderRecent();
+  renderLedger();
+  renderHeads();
+}
+
+function fmt(n){ return parseFloat(n||0).toLocaleString('en-IN',{minimumFractionDigits:2}); }
+
+function renderKPIs(){
+  transactions = JSON.parse(localStorage.getItem('sp_transactions') || '[]');
+  const t = transactions;
+  const totalDR = t.filter(x=>x.type==='DR').reduce((s,x)=>s+parseFloat(x.amount||0),0);
+  const totalCR = t.filter(x=>x.type==='CR').reduce((s,x)=>s+parseFloat(x.amount||0),0);
+  const upiDR   = t.filter(x=>x.type==='DR'&&x.payment==='UPI').reduce((s,x)=>s+parseFloat(x.amount||0),0);
+  const cashDR  = t.filter(x=>x.type==='DR'&&x.payment==='Cash').reduce((s,x)=>s+parseFloat(x.amount||0),0);
+  const bal = totalCR - totalDR;
+  document.getElementById('kpiGrid').innerHTML = [
+    {label:'Total Debit',   val:'₹'+fmt(totalDR), cls:'debit'},
+    {label:'Total Credit',  val:'₹'+fmt(totalCR), cls:'credit'},
+    {label:'Net Balance',   val:(bal<0?'-':'')+'₹'+fmt(Math.abs(bal)), cls:bal>=0?'credit':'debit'},
+    {label:'UPI Debits',    val:'₹'+fmt(upiDR),   cls:'neutral'},
+    {label:'Cash Debits',   val:'₹'+fmt(cashDR),  cls:'neutral'},
+    {label:'Entries',       val:t.length,          cls:'neutral'},
+  ].map(k=>`<div class="kpi-card"><div class="kpi-label">${k.label}</div><div class="kpi-val ${k.cls}">${k.val}</div></div>`).join('');
+}
+
+function rowHTML(x){
+  return `<tr>
+    <td>${x.date||'—'}</td>
+    <td>${x.head||'—'}</td>
+    <td style="color:var(--text-muted)">${x.narration||'—'}</td>
+    <td><span class="badge badge-${x.type==='DR'?'dr':'cr'}">${x.type}</span></td>
+    <td><span class="badge badge-${x.payment==='UPI'?'upi':'cash'}">${x.payment}</span></td>
+    <td style="font-weight:600;color:${x.type==='DR'?'var(--debit)':'var(--credit)'}">₹${fmt(x.amount)}</td>
+  </tr>`;
+}
+
+function renderRecent(){
+  transactions = JSON.parse(localStorage.getItem('sp_transactions') || '[]');
+  const recent = [...transactions].reverse().slice(0,10);
+  document.getElementById('recentTbody').innerHTML = recent.length
+    ? recent.map(rowHTML).join('')
+    : '<tr><td colspan="6" class="empty-state">No transactions yet. Start from POS or click Load from Sheet.</td></tr>';
+}
+
+function renderLedger(){
+  transactions = JSON.parse(localStorage.getItem('sp_transactions') || '[]');
+  const search = (document.getElementById('ledgerSearch')||{}).value||'';
+  let list = [...transactions].reverse();
+  if(ledgerFilter==='DR')   list=list.filter(x=>x.type==='DR');
+  else if(ledgerFilter==='CR')   list=list.filter(x=>x.type==='CR');
+  else if(ledgerFilter==='UPI')  list=list.filter(x=>x.payment==='UPI');
+  else if(ledgerFilter==='Cash') list=list.filter(x=>x.payment==='Cash');
+  if(search) list=list.filter(x=>(x.head+x.narration).toLowerCase().includes(search.toLowerCase()));
+  document.getElementById('ledgerTbody').innerHTML = list.length
+    ? list.map(rowHTML).join('')
+    : '<tr><td colspan="6" class="empty-state">No transactions match your filter.</td></tr>';
+}
+
+function filterLedger(){ renderLedger(); }
+function setLedgerFilter(f,btn){
+  ledgerFilter=f;
+  document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLedger();
+}
+
+function renderHeads(){
+  document.getElementById('headsGrid').innerHTML = heads.map((h,i)=>
+    `<div class="head-card">
+      <span class="head-num">${i+1}</span>
+      <span class="head-name">${h}</span>
+      <button class="head-del" onclick="deleteHead(${i})" title="Delete">×</button>
+    </div>`
+  ).join('');
+}
+
+function addHead(){
+  const inp = document.getElementById('newHeadInput');
+  const v = inp.value.trim();
+  if(!v){ showToast('Enter a head name','error'); return; }
+  heads.push(v); inp.value='';
+  saveHeads(); renderHeads(); showToast('Head added ✓','success');
+}
+
+function deleteHead(i){
+  if(!confirm(`Delete "${heads[i]}"?`)) return;
+  heads.splice(i,1); saveHeads(); renderHeads(); showToast('Head removed');
+}
+
+function exportCSV(){
+  transactions = JSON.parse(localStorage.getItem('sp_transactions') || '[]');
+  if(!transactions.length){ showToast('No transactions to export','error'); return; }
+  const rows = [['ID','Date','Head','Type','Payment','Amount','Narration']];
+  transactions.forEach(x=>rows.push([x.id,x.date,x.head,x.type,x.payment,x.amount,x.narration]));
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'samuel-transactions.csv'; a.click();
+  showToast('CSV downloaded ✓','success');
+}
+
+async function loadFromSheet(){
+  showToast('Loading from Sheet...','');
+  try {
+    const res = await fetch(SHEET_URL);
+    const data = await res.json();
+    if(!Array.isArray(data)||data.length===0){ showToast('No data in Sheet yet','error'); return; }
+    const imported = data.map(r=>({
+      id:       r.ID       || r.id,
+      date:     r.Date     || r.date,
+      head:     r.Head     || r.head,
+      type:     r.Type     || r.type,
+      payment:  r.Payment  || r.payment,
+      amount:   parseFloat(r.Amount || r.amount)||0,
+      narration:r.Narration|| r.narration||'—'
+    })).filter(r=>r.id);
+    localStorage.setItem('sp_transactions', JSON.stringify(imported));
+    transactions = imported;
+    renderAll();
+    showToast(`✓ Loaded ${imported.length} transactions from Sheet`,'success');
+  } catch(e){
+    showToast('Failed to load — check internet connection','error');
+  }
+}
+
+function copyScript(){
+  const codeBlock = document.getElementById('scriptCode');
+  const btnText = codeBlock.querySelector('.copy-btn').innerText;
+  const code = codeBlock.innerText.replace(btnText+'\n','').trim();
+  navigator.clipboard.writeText(code).then(()=>showToast('Copied ✓','success'));
+}
+
+function clearAllData(){
+  if(!confirm('Delete ALL local transactions? Your Google Sheet data is safe.')) return;
+  localStorage.removeItem('sp_transactions');
+  transactions=[];
+  renderAll();
+  showToast('Local data cleared','success');
+}
+
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  if(btn&&btn.classList.contains('nav-item')) btn.classList.add('active');
+  if(id==='dashboard') renderAll();
+  if(id==='ledger') renderLedger();
+  if(id==='heads') renderHeads();
+}
+
+function setMobActive(btn){
+  document.querySelectorAll('.mob-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+(type||'');
+  setTimeout(()=>t.className='toast',3000);
+}
+</script>
+</body>
+</html>
